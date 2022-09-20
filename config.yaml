@@ -1,0 +1,6 @@
+request:
+  latitude: 49.020
+  longitude: -122.803
+  apiKey: 4e463789edd43e2523d79f31f4b87581
+data:
+  path: ../data/weather.csv
