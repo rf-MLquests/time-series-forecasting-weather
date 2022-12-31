@@ -24,7 +24,7 @@ def read_file(path):
     return current.iloc[:, [4, 5, 6, 7, 9, 11, 13]]
 
 
-def preprocess():
+def drop_duplicates():
     data = pd.read_csv("../data/weather_dava.csv")
     to_drop = data[(data["Max_Temp"].isnull()) & (data["Min_Temp"].isnull()) & (data["Mean_Temp"].isnull())]
     data.drop(to_drop.index, inplace=True)
@@ -32,20 +32,25 @@ def preprocess():
     data.to_csv(save_path, index=False, header=True)
 
 
-def fill_in_missing_dates():
+def process_missing_values():
     data = pd.read_csv("../data/processed.csv")
     data['Date'] = pd.to_datetime(data['Date'])
     data.set_index('Date', inplace=True)
     all_days = (pd.date_range(start='2000-01-01', end='2022-12-31'))
     df = data.reindex(all_days)
     df = df.reset_index().rename(columns={'index': 'Date'})
-    print(df.info())
+    df.loc[df["Year"].isnull(), "Year"] = df["Date"].dt.year
+    df.loc[df["Month"].isnull(), "Month"] = df["Date"].dt.month
+    df.loc[df["Day"].isnull(), "Day"] = df["Date"].dt.day
+    df = df.astype({"Year": int, "Month": int, "Day": int})
+    df["Max_Temp"] = df.groupby(["Month", "Day"])["Max_Temp"].transform(lambda x: x.fillna(x.mean().round(1)))
+    df["Min_Temp"] = df.groupby(["Month", "Day"])["Min_Temp"].transform(lambda x: x.fillna(x.mean().round(1)))
+    df["Mean_Temp"] = df.groupby(["Month", "Day"])["Mean_Temp"].transform(lambda x: x.fillna(x.mean().round(1)))
+    save_path = "../data/imputed.csv"
+    df.to_csv(save_path, index=False, header=True)
 
-    # df.loc[df["Year"].isnull(), "Year"] = df["Date"].year
-    # print(df.tail(10))
 
-
-fill_in_missing_dates()
+process_missing_values()
 
 # data.drop(data[data["Year"] == 2013].index, inplace=True)
 # to_drop = data[(data["Year"] == 2013) & data is not None]
