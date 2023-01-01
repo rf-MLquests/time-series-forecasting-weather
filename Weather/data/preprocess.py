@@ -50,12 +50,24 @@ def process_missing_values():
     df.to_csv(save_path, index=False, header=True)
 
 
-process_missing_values()
+def seasonality_analysis():
+    data = pd.read_csv("../data/imputed.csv")
+    data['Date'] = pd.to_datetime(data['Date'])
+    df_max_temp = data.loc[:, ["Date", "Max_Temp"]]
+    df_max_temp = df_max_temp.set_index("Date")
+    decomposition = sm.tsa.seasonal_decompose(df_max_temp)
+    decomposed_data = pd.DataFrame()
+    decomposed_data["trend"] = decomposition.trend
+    decomposed_data["seasonal"] = decomposition.seasonal
+    decomposed_data["random_noise"] = decomposition.resid
+    fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, figsize=(16, 12))
+    decomposed_data['trend'].plot(ax=ax1)
+    decomposed_data['seasonal'].plot(ax=ax2)
+    decomposed_data['random_noise'].plot(ax=ax3)
+    plt.show()
 
-# data.drop(data[data["Year"] == 2013].index, inplace=True)
-# to_drop = data[(data["Year"] == 2013) & data is not None]
-# print(to_drop)
 
+seasonality_analysis()
 
 # data["time"] = pd.to_datetime(data["timestamp"], unit="s")
 #
