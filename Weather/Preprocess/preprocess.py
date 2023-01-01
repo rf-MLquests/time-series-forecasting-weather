@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from statsmodels.graphics import tsaplots
-from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.stattools import adfuller
 import os
 
 
@@ -67,27 +67,31 @@ def seasonality_analysis():
     plt.show()
 
 
-seasonality_analysis()
+def stationarity_analysis():
+    data = pd.read_csv("../data/imputed.csv")
+    data['Date'] = pd.to_datetime(data['Date'])
+    df_max_temp = data.loc[:, ["Date", "Max_Temp"]]
+    df_max_temp = df_max_temp.set_index("Date")
+    train, test = train_test_split(df_max_temp, '2020-01-01')
+    result = adfuller(train['Max_Temp'])
+    print(result[0])
+    print(result[1])  # To get the p-value
+    print(result[4])
 
-# data["time"] = pd.to_datetime(data["timestamp"], unit="s")
-#
-# df = data.loc[:, ["temperature", "time"]].groupby(pd.Grouper(key="time", freq="1D")).mean()
-# print(df)
-# print(df.info())
-# df_shift = df.shift(periods=1)
-# print(df_shift)
-# print(df_shift.info())
-# diff = df - df_shift
-# print(diff[1:])
-#
-# decomposition = sm.tsa.seasonal_decompose(diff[1:])
-# decomposed_data = pd.DataFrame()
-# decomposed_data["trend"] = decomposition.trend
-# decomposed_data["seasonal"] = decomposition.seasonal
-# decomposed_data["random_noise"] = decomposition.resid
-#
-# fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, figsize=(20, 16))
-# decomposed_data['trend'].plot(ax=ax1)
-# decomposed_data['seasonal'].plot(ax=ax2)
-# decomposed_data['random_noise'].plot(ax=ax3)
-# plt.show()
+
+def acf_pacf_plots():
+    data = pd.read_csv("../data/imputed.csv")
+    data['Date'] = pd.to_datetime(data['Date'])
+    df_max_temp = data.loc[:, ["Date", "Max_Temp"]]
+    df_max_temp = df_max_temp.set_index("Date")
+    train, test = train_test_split(df_max_temp, '2020-01-01')
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(16, 6))
+    tsaplots.plot_acf(train, zero=False, ax=ax1)
+    tsaplots.plot_pacf(train, zero=False, ax=ax2, lags=8)
+    plt.show()
+
+
+def train_test_split(df, cutoff):
+    train = df.loc['2000-01-01':cutoff]
+    test = df.loc[cutoff:]
+    return train, test
