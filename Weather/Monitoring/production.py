@@ -30,9 +30,9 @@ def save_to_csv(json, path, exists):
     data_entry['timestamp'] = json['dt']
     data_entry['city_name'] = json['name']
     data_entry['rain_1h'] = json['rain']['1h'] if 'rain' in json else 0
-    data_entry['rain_3h'] = json['rain']['3h'] if 'rain' in json else 0
+    data_entry['rain_3h'] = 0
     data_entry['snow_1h'] = json['snow']['1h'] if 'snow' in json else 0
-    data_entry['snow_3h'] = json['snow']['3h'] if 'snow' in json else 0
+    data_entry['snow_3h'] = 0
     print(data_entry)
     with open(path, 'a') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=data_entry.keys())
